@@ -1,3 +1,7 @@
+@page
+@{
+    Layout = null;
+}
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -128,7 +132,7 @@
             animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes slideDown {
+        @@keyframes slideDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
@@ -143,7 +147,7 @@
             animation: livePulse 1.5s ease-in-out infinite;
         }
 
-        @keyframes livePulse {
+        @@keyframes livePulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.5; transform: scale(1.3); }
         }
@@ -239,7 +243,7 @@
         .panel { display: none; }
         .panel.active { display: block; animation: fadeIn 0.3s ease; }
 
-        @keyframes fadeIn {
+        @@keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
@@ -525,7 +529,7 @@
         }
 
         /* Responsive */
-        @media (max-width: 700px) {
+        @@media (max-width: 700px) {
             .project-card { flex-direction: column; align-items: stretch; }
             .project-stats { justify-content: center; }
             .header { flex-direction: column; align-items: flex-start; }
@@ -843,3 +847,5 @@
     </script>
 </body>
 </html>
+
+
