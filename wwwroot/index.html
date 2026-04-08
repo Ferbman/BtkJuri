@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTK Jüri — Oylama Paneli</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8888a0;
+            --accent-1: #6c5ce7;
+            --accent-2: #a29bfe;
+            --accent-3: #fd79a8;
+            --accent-glow: rgba(108, 92, 231, 0.4);
+            --gold: #ffd700;
+            --success: #00b894;
+            --border: rgba(255, 255, 255, 0.06);
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(108, 92, 231, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(253, 121, 168, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(0, 184, 148, 0.05) 0%, transparent 50%);
+            animation: bgShift 20s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        @keyframes bgShift {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-5%, -5%) rotate(3deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 600px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        /* ─── HEADER ─── */
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header .logo {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--accent-2);
+            margin-bottom: 8px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ─── STATE: WAITING ─── */
+        #waitingState {
+            animation: fadeIn 0.6s ease;
+        }
+
+        .waiting-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid var(--accent-1);
+            animation: pulseRing 2s ease-out infinite;
+        }
+
+        .pulse-ring:nth-child(2) { animation-delay: 0.6s; }
+        .pulse-ring:nth-child(3) { animation-delay: 1.2s; }
+
+        .pulse-core {
+            position: absolute;
+            inset: 30%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+            box-shadow: 0 0 30px var(--accent-glow);
+            animation: pulseCore 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseRing {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        @keyframes pulseCore {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .waiting-text {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .waiting-text span {
+            display: block;
+            font-size: 14px;
+            color: rgba(136, 136, 160, 0.6);
+            margin-top: 8px;
+        }
+
+        /* ─── STATE: VOTING ─── */
+        #votingState {
+            display: none;
+        }
+
+        .project-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 32px;
+            backdrop-filter: blur(20px);
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .project-name {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff, var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .project-developer {
+            font-size: 14px;
+            color: var(--accent-3);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .project-description {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Timer */
+        .timer-container {
+            margin-bottom: 28px;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        .timer-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-3));
+            border-radius: 3px;
+            transition: width 1s linear;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .timer-text {
+            font-size: 42px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .timer-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Vote buttons */
+        .vote-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        }
+
+        .vote-btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            border: 2px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 28px;
+            font-weight: 800;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vote-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .vote-btn:nth-child(1)::before { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .vote-btn:nth-child(2)::before { background: linear-gradient(135deg, #e67e22, #d35400); }
+        .vote-btn:nth-child(3)::before { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+        .vote-btn:nth-child(4)::before { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .vote-btn:nth-child(5)::before { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+
+        .vote-btn:hover::before { opacity: 1; }
+
+        .vote-btn:hover {
+            transform: translateY(-6px) scale(1.08);
+            border-color: transparent;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .vote-btn:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .vote-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .vote-label {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding: 0 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+
+        /* ─── STATE: VOTED ─── */
+        #votedState {
+            display: none;
+        }
+
+        .voted-check {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--success), #00cec9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 40px rgba(0, 184, 148, 0.3);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .voted-check svg {
+            width: 44px;
+            height: 44px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 60;
+            stroke-dashoffset: 60;
+            animation: drawCheck 0.6s ease 0.3s forwards;
+        }
+
+        @keyframes drawCheck {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .voted-text {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .voted-score {
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--gold), #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .voted-subtext {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ─── CONNECTION STATUS ─── */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e74c3c;
+            transition: background 0.3s ease;
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+            box-shadow: 0 0 8px rgba(0, 184, 148, 0.5);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container { padding: 16px; }
+            .project-name { font-size: 22px; }
+            .vote-btn { width: 60px; height: 60px; font-size: 24px; border-radius: 14px; }
+            .timer-text { font-size: 36px; }
+            .header h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">BTK Jüri</div>
+            <h1>Sunum Oylama Sistemi</h1>
+        </div>
+
+        <!-- WAITING STATE -->
+        <div id="waitingState">
+            <div class="waiting-icon">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+                <div class="pulse-core"></div>
+            </div>
+            <p class="waiting-text">
+                Lütfen sıradaki projenin<br>oylamaya açılmasını bekleyin…
+                <span>Bağlantınız aktif, oylama başladığında ekranınız otomatik güncellenecek.</span>
+            </p>
+        </div>
+
+        <!-- VOTING STATE -->
+        <div id="votingState">
+            <div class="project-card">
+                <div class="project-name" id="projectName"></div>
+                <div class="project-developer" id="projectDeveloper"></div>
+                <p class="project-description" id="projectDescription"></p>
+            </div>
+
+            <div class="timer-container">
+                <div class="timer-bar-bg">
+                    <div class="timer-bar" id="timerBar"></div>
+                </div>
+                <div class="timer-text" id="timerText">30</div>
+                <div class="timer-label">Kalan Süre (saniye)</div>
+            </div>
+
+            <div class="vote-buttons" id="voteButtons">
+                <button class="vote-btn" data-score="1"><span>1</span></button>
+                <button class="vote-btn" data-score="2"><span>2</span></button>
+                <button class="vote-btn" data-score="3"><span>3</span></button>
+                <button class="vote-btn" data-score="4"><span>4</span></button>
+                <button class="vote-btn" data-score="5"><span>5</span></button>
+            </div>
+            <div class="vote-label">
+                <span>Çok Kötü</span>
+                <span>Mükemmel</span>
+            </div>
+        </div>
+
+        <!-- VOTED STATE -->
+        <div id="votedState">
+            <div class="voted-check">
+                <svg viewBox="0 0 24 24">
+                    <polyline points="4 12 10 18 20 6"></polyline>
+                </svg>
+            </div>
+            <div class="voted-text">Oyunuz Kaydedildi!</div>
+            <div class="voted-score" id="votedScoreDisplay"></div>
+            <p class="voted-subtext">Sıradaki proje için lütfen bekleyin…</p>
+        </div>
+    </div>
+
+    <!-- Connection Status -->
+    <div class="connection-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Bağlanıyor…</span>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        // ─── STATE MANAGEMENT ───
+        const waitingState = document.getElementById('waitingState');
+        const votingState = document.getElementById('votingState');
+        const votedState = document.getElementById('votedState');
+
+        let currentProjectId = null;
+        let timerInterval = null;
+        let remainingSeconds = 30;
+
+        function showState(state) {
+            waitingState.style.display = 'none';
+            votingState.style.display = 'none';
+            votedState.style.display = 'none';
+
+            if (state === 'waiting') {
+                waitingState.style.display = 'block';
+                waitingState.style.animation = 'none';
+                waitingState.offsetHeight; // reflow
+                waitingState.style.animation = 'fadeIn 0.6s ease';
+            } else if (state === 'voting') {
+                votingState.style.display = 'block';
+            } else if (state === 'voted') {
+                votedState.style.display = 'block';
+                votedState.style.animation = 'none';
+                votedState.offsetHeight;
+                votedState.style.animation = 'fadeIn 0.5s ease';
+            }
+        }
+
+        // ─── TIMER ───
+        function startTimer(seconds) {
+            remainingSeconds = seconds;
+            const totalSeconds = seconds;
+            const timerBar = document.getElementById('timerBar');
+            const timerText = document.getElementById('timerText');
+
+            timerBar.style.width = '100%';
+            timerText.textContent = remainingSeconds;
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                remainingSeconds--;
+                timerText.textContent = remainingSeconds;
+                timerBar.style.width = ((remainingSeconds / totalSeconds) * 100) + '%';
+
+                if (remainingSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    showState('waiting');
+                    currentProjectId = null;
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // ─── SIGNALR CONNECTION ───
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/votingHub")
+            .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+            .build();
+
+        // Vote Started
+        connection.on("VoteStarted", (data) => {
+            currentProjectId = data.projectId;
+            document.getElementById('projectName').textContent = data.projectName;
+            document.getElementById('projectDeveloper').textContent = data.developer;
+            document.getElementById('projectDescription').textContent = data.description;
+            showState('voting');
+            startTimer(30);
+        });
+
+        // Vote Stopped
+        connection.on("VoteStopped", () => {
+            stopTimer();
+            showState('waiting');
+            currentProjectId = null;
+        });
+
+        // Connection status
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+
+        connection.onreconnecting(() => {
+            statusDot.classList.remove('connected');
+            statusText.textContent = 'Yeniden bağlanıyor…';
+        });
+
+        connection.onreconnected(() => {
+            statusDot.classList.add('connected');
+            statusText.textContent = 'Bağlı';
+        });
+
+        connection.onclose(() => {
+            statusDot.classList.remove('connected');
+            statusText.textContent = 'Bağlantı kesildi';
+        });
+
+        // Start connection
+        async function startConnection() {
+            try {
+                await connection.start();
+                statusDot.classList.add('connected');
+                statusText.textContent = 'Bağlı';
+                console.log("SignalR bağlantısı kuruldu.");
+            } catch (err) {
+                console.error("SignalR bağlantı hatası:", err);
+                statusText.textContent = 'Bağlantı hatası';
+                setTimeout(startConnection, 3000);
+            }
+        }
+
+        startConnection();
+
+        // ─── VOTE BUTTON HANDLERS ───
+        document.querySelectorAll('.vote-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!currentProjectId) return;
+
+                const score = parseInt(btn.getAttribute('data-score'));
+
+                try {
+                    await connection.invoke("SubmitVote", currentProjectId, score);
+                    stopTimer();
+                    document.getElementById('votedScoreDisplay').textContent = '★'.repeat(score) + '☆'.repeat(5 - score);
+                    showState('voted');
+
+                    // 3 saniye sonra bekleme ekranına dön
+                    setTimeout(() => {
+                        showState('waiting');
+                    }, 3000);
+
+                    currentProjectId = null;
+                } catch (err) {
+                    console.error("Oy gönderme hatası:", err);
+                    alert("Oy gönderilemedi. Lütfen tekrar deneyin.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

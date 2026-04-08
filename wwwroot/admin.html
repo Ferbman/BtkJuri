@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTK Jüri — Admin Paneli</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.06);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8888a0;
+            --accent-1: #6c5ce7;
+            --accent-2: #a29bfe;
+            --accent-3: #fd79a8;
+            --accent-glow: rgba(108, 92, 231, 0.4);
+            --gold: #ffd700;
+            --success: #00b894;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --border: rgba(255, 255, 255, 0.06);
+            --radius: 16px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(108, 92, 231, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(253, 121, 168, 0.04) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* ─── HEADER ─── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left .logo {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--accent-3);
+            margin-bottom: 4px;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .conn-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .conn-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            transition: background 0.3s ease;
+        }
+
+        .conn-dot.connected {
+            background: var(--success);
+            box-shadow: 0 0 8px rgba(0, 184, 148, 0.5);
+        }
+
+        /* ─── LIVE VOTING BANNER ─── */
+        .live-banner {
+            display: none;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.15), rgba(253, 121, 168, 0.1));
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: var(--radius);
+            padding: 24px 32px;
+            margin-bottom: 32px;
+            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .live-banner .live-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e74c3c;
+            margin-right: 8px;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        .live-banner h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .live-stats {
+            display: flex;
+            gap: 32px;
+            margin-top: 16px;
+        }
+
+        .live-stat {
+            text-align: center;
+        }
+
+        .live-stat .value {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .live-stat .label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .stop-btn {
+            margin-top: 16px;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .stop-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+        }
+
+        /* ─── TAB NAVIGATION ─── */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 32px;
+            width: fit-content;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: var(--accent-1);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        /* ─── PANELS ─── */
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ─── PROJECT LIST ─── */
+        .project-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .project-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .project-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(108, 92, 231, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .project-card.voting-active {
+            border-color: rgba(108, 92, 231, 0.5);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .project-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .project-info h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .project-info .developer {
+            font-size: 13px;
+            color: var(--accent-3);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .project-info .description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .project-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            min-width: 80px;
+        }
+
+        .stat-box .stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-2);
+        }
+
+        .stat-box .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .start-vote-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .start-vote-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--accent-glow);
+        }
+
+        .start-vote-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ─── ADD PROJECT FORM ─── */
+        .add-form {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            max-width: 600px;
+        }
+
+        .add-form h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--success), #00cec9);
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 184, 148, 0.3);
+        }
+
+        /* ─── SCOREBOARD ─── */
+        .scoreboard-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+        }
+
+        .score-item:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .score-item.rank-1 {
+            border-color: rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.03);
+        }
+
+        .score-item.rank-2 {
+            border-color: rgba(192, 192, 192, 0.2);
+        }
+
+        .score-item.rank-3 {
+            border-color: rgba(205, 127, 50, 0.2);
+        }
+
+        .rank-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .rank-1 .rank-badge { background: linear-gradient(135deg, #ffd700, #ffaa00); color: #333; }
+        .rank-2 .rank-badge { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #333; }
+        .rank-3 .rank-badge { background: linear-gradient(135deg, #cd7f32, #b8690f); color: #fff; }
+
+        .score-info { flex: 1; min-width: 0; }
+        .score-info h4 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+        .score-info .score-developer { font-size: 13px; color: var(--accent-3); }
+
+        .score-value {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .score-value .avg {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-value .votes {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* ─── TOAST ─── */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 14px 28px;
+            background: var(--success);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            .project-card { flex-direction: column; align-items: stretch; }
+            .project-stats { justify-content: center; }
+            .header { flex-direction: column; align-items: flex-start; }
+            .live-stats { flex-wrap: wrap; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">Admin Panel</div>
+                <h1>BTK Jüri Yönetimi</h1>
+            </div>
+            <div class="header-right">
+                <div class="conn-badge">
+                    <div class="conn-dot" id="connDot"></div>
+                    <span id="connText">Bağlanıyor…</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIVE VOTING BANNER -->
+        <div class="live-banner" id="liveBanner">
+            <h3><span class="live-dot"></span>Oylama Aktif: <span id="liveProjectName"></span></h3>
+            <div class="live-stats">
+                <div class="live-stat">
+                    <div class="value" id="liveAverage">—</div>
+                    <div class="label">Ortalama Puan</div>
+                </div>
+                <div class="live-stat">
+                    <div class="value" id="liveTotalVotes">0</div>
+                    <div class="label">Toplam Oy</div>
+                </div>
+                <div class="live-stat">
+                    <div class="value" id="liveTimer">30</div>
+                    <div class="label">Kalan Süre</div>
+                </div>
+            </div>
+            <button class="stop-btn" onclick="stopVoting()">⏹ Oylamayı Durdur</button>
+        </div>
+
+        <!-- TAB NAVIGATION -->
+        <div class="tabs">
+            <button class="tab active" data-tab="projects" onclick="switchTab('projects')">📋 Projeler</button>
+            <button class="tab" data-tab="addProject" onclick="switchTab('addProject')">➕ Proje Ekle</button>
+            <button class="tab" data-tab="scoreboard" onclick="switchTab('scoreboard')">🏆 Skor Tablosu</button>
+        </div>
+
+        <!-- PROJECT LIST PANEL -->
+        <div class="panel active" id="projectsPanel">
+            <div class="project-grid" id="projectGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- ADD PROJECT PANEL -->
+        <div class="panel" id="addProjectPanel">
+            <div class="add-form">
+                <h3>Yeni Proje Ekle</h3>
+                <div class="form-group">
+                    <label>Proje Adı</label>
+                    <input type="text" id="inputName" placeholder="Örn: Akıllı Sera Sistemi">
+                </div>
+                <div class="form-group">
+                    <label>Geliştiren (Takım/Kişi)</label>
+                    <input type="text" id="inputDeveloper" placeholder="Örn: Takım Alpha">
+                </div>
+                <div class="form-group">
+                    <label>Açıklama</label>
+                    <textarea id="inputDescription" placeholder="Projenin kısa açıklaması…"></textarea>
+                </div>
+                <button class="submit-btn" onclick="addProject()">✅ Projeyi Kaydet</button>
+            </div>
+        </div>
+
+        <!-- SCOREBOARD PANEL -->
+        <div class="panel" id="scoreboardPanel">
+            <div class="scoreboard-list" id="scoreboardList">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        // ─── STATE ───
+        let votingProjectId = null;
+        let adminTimer = null;
+
+        // ─── TAB SWITCHING ───
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(tabName + 'Panel').classList.add('active');
+
+            if (tabName === 'projects') loadProjects();
+            if (tabName === 'scoreboard') loadScoreboard();
+        }
+
+        // ─── TOAST ───
+        function showToast(msg, color = '#00b894') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.background = color;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ─── LOAD PROJECTS ───
+        async function loadProjects() {
+            try {
+                const res = await fetch('/api/projects');
+                const projects = await res.json();
+                const grid = document.getElementById('projectGrid');
+                grid.innerHTML = projects.map(p => `
+                    <div class="project-card ${votingProjectId === p.id ? 'voting-active' : ''}" id="card-${p.id}">
+                        <div class="project-info">
+                            <h3>${escHtml(p.name)}</h3>
+                            <div class="developer">${escHtml(p.developer)}</div>
+                            <div class="description">${escHtml(p.description)}</div>
+                        </div>
+                        <div class="project-stats">
+                            <div class="stat-box">
+                                <div class="stat-value">${p.averageScore > 0 ? p.averageScore.toFixed(1) : '—'}</div>
+                                <div class="stat-label">Ortalama</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">${p.totalVotes}</div>
+                                <div class="stat-label">Oy</div>
+                            </div>
+                            <button class="start-vote-btn" onclick="startVoting(${p.id}, '${escHtml(p.name)}')" 
+                                ${votingProjectId ? 'disabled' : ''}>
+                                🗳️ Oylamayı Başlat
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Projeler yüklenemedi:', err);
+            }
+        }
+
+        // ─── LOAD SCOREBOARD ───
+        async function loadScoreboard() {
+            try {
+                const res = await fetch('/api/projects/scoreboard');
+                const results = await res.json();
+                const list = document.getElementById('scoreboardList');
+
+                if (results.length === 0) {
+                    list.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:40px;">Henüz oy verilmemiş.</p>';
+                    return;
+                }
+
+                list.innerHTML = results.map((p, i) => `
+                    <div class="score-item ${i < 3 ? 'rank-' + (i + 1) : ''}">
+                        <div class="rank-badge">${i + 1}</div>
+                        <div class="score-info">
+                            <h4>${escHtml(p.name)}</h4>
+                            <div class="score-developer">${escHtml(p.developer)}</div>
+                        </div>
+                        <div class="score-value">
+                            <div class="avg">${p.averageScore > 0 ? p.averageScore.toFixed(2) : '—'}</div>
+                            <div class="votes">${p.totalVotes} oy</div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Skor tablosu yüklenemedi:', err);
+            }
+        }
+
+        // ─── ADD PROJECT ───
+        async function addProject() {
+            const name = document.getElementById('inputName').value.trim();
+            const developer = document.getElementById('inputDeveloper').value.trim();
+            const description = document.getElementById('inputDescription').value.trim();
+
+            if (!name || !developer) {
+                showToast('Proje adı ve geliştiren alanları zorunludur.', '#e74c3c');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, developer, description })
+                });
+
+                if (res.ok) {
+                    showToast('Proje başarıyla eklendi! ✅');
+                    document.getElementById('inputName').value = '';
+                    document.getElementById('inputDeveloper').value = '';
+                    document.getElementById('inputDescription').value = '';
+                    switchTab('projects');
+                }
+            } catch (err) {
+                showToast('Proje eklenirken hata oluştu.', '#e74c3c');
+            }
+        }
+
+        // ─── START VOTING ───
+        async function startVoting(projectId, projectName) {
+            if (votingProjectId) return;
+            votingProjectId = projectId;
+
+            try {
+                await connection.invoke("StartProjectVote", projectId);
+
+                // Show live banner
+                document.getElementById('liveBanner').style.display = 'block';
+                document.getElementById('liveProjectName').textContent = projectName;
+                document.getElementById('liveAverage').textContent = '—';
+                document.getElementById('liveTotalVotes').textContent = '0';
+
+                // Start admin-side timer
+                let seconds = 30;
+                document.getElementById('liveTimer').textContent = seconds;
+                clearInterval(adminTimer);
+                adminTimer = setInterval(() => {
+                    seconds--;
+                    document.getElementById('liveTimer').textContent = seconds;
+                    if (seconds <= 0) {
+                        clearInterval(adminTimer);
+                        stopVoting();
+                    }
+                }, 1000);
+
+                showToast('Oylama başlatıldı! 🗳️');
+                loadProjects();
+            } catch (err) {
+                console.error("Oylama başlatılamadı:", err);
+                votingProjectId = null;
+                showToast('Oylama başlatılamadı.', '#e74c3c');
+            }
+        }
+
+        // ─── STOP VOTING ───
+        async function stopVoting() {
+            clearInterval(adminTimer);
+
+            try {
+                await connection.invoke("StopProjectVote");
+            } catch (err) {
+                console.error("Oylama durdurulamadı:", err);
+            }
+
+            votingProjectId = null;
+            document.getElementById('liveBanner').style.display = 'none';
+            loadProjects();
+            showToast('Oylama sonlandırıldı.');
+        }
+
+        // ─── SIGNALR CONNECTION ───
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/votingHub")
+            .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+            .build();
+
+        // Real-time vote updates
+        connection.on("VoteReceived", (data) => {
+            if (data.projectId === votingProjectId) {
+                document.getElementById('liveAverage').textContent = data.average.toFixed(2);
+                document.getElementById('liveTotalVotes').textContent = data.totalVotes;
+            }
+        });
+
+        connection.on("VoteStopped", () => {
+            // In case another admin window triggers stop
+            clearInterval(adminTimer);
+            votingProjectId = null;
+            document.getElementById('liveBanner').style.display = 'none';
+            loadProjects();
+        });
+
+        // Connection status
+        const connDot = document.getElementById('connDot');
+        const connText = document.getElementById('connText');
+
+        connection.onreconnecting(() => { connDot.classList.remove('connected'); connText.textContent = 'Yeniden bağlanıyor…'; });
+        connection.onreconnected(() => { connDot.classList.add('connected'); connText.textContent = 'Bağlı'; });
+        connection.onclose(() => { connDot.classList.remove('connected'); connText.textContent = 'Bağlantı kesildi'; });
+
+        async function startConnection() {
+            try {
+                await connection.start();
+                connDot.classList.add('connected');
+                connText.textContent = 'Bağlı';
+            } catch (err) {
+                console.error("SignalR hatası:", err);
+                connText.textContent = 'Bağlantı hatası';
+                setTimeout(startConnection, 3000);
+            }
+        }
+
+        startConnection();
+
+        // ─── UTILITIES ───
+        function escHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Initial load
+        loadProjects();
+    </script>
+</body>
+</html>
